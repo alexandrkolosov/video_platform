@@ -94,55 +94,79 @@ async function displayMovieDetails() {
 
     const movie = await fetchAPIData(`movie/${movieID}`);
 
+// OVERLAY for a background image 
+displayBackgroundImage('movie', movie.backdrop_path);
+
     const div = document.createElement('div');
 
     div.innerHTML = `<div class="details-top">
           <div>
-            <img
-              src="images/no-image.jpg"
-              class="card-img-top"
-              alt="Movie Title"
-            />
+          ${movie.poster_path
+            ? ` <img
+          src="https://image.tmdb.org/t/p/w500${movie.poster_path}"
+          class="card-img-top"
+          alt="${movie.title}"
+        />` : ` <img
+          src="images/no-image.jpg"
+          class="card-img-top"
+          alt="${movie.title}"
+        />`
+        }
           </div>
           <div>
-            <h2>Movie Title</h2>
+            <h2>${movie.title}</h2>
             <p>
               <i class="fas fa-star text-primary"></i>
-              8 / 10
+              ${movie.vote_average.toFixed(1)} / 10
             </p>
-            <p class="text-muted">Release Date: XX/XX/XXXX</p>
+            <p class="text-muted">Release Date: ${movie.release_date} </p>
             <p>
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Maiores
-              atque molestiae error debitis provident dolore hic odit, impedit
-              sint, voluptatum consectetur assumenda expedita perferendis
-              obcaecati veritatis voluptatibus. Voluptatum repellat suscipit,
-              quae molestiae cupiditate modi libero dolorem commodi obcaecati!
-              Ratione quia corporis recusandae delectus perspiciatis consequatur
-              ipsam. Cumque omnis ad recusandae.
+              ${movie.overview}
             </p>
             <h5>Genres</h5>
             <ul class="list-group">
-              <li>Genre 1</li>
-              <li>Genre 2</li>
-              <li>Genre 3</li>
+            ${movie.genres.map((genre) => `<li>${genre.name}</li>`).join('')}
             </ul>
-            <a href="#" target="_blank" class="btn">Visit Movie Homepage</a>
+            <a href="${movie.homepage}" target="_blank" class="btn">Visit Movie Homepage</a>
           </div>
         </div>
         <div class="details-bottom">
           <h2>Movie Info</h2>
           <ul>
-            <li><span class="text-secondary">Budget:</span> $1,000,000</li>
-            <li><span class="text-secondary">Revenue:</span> $2,000,000</li>
-            <li><span class="text-secondary">Runtime:</span> 90 minutes</li>
-            <li><span class="text-secondary">Status:</span> Released</li>
+            <li><span class="text-secondary">Budget:</span> $ ${addCommasToNumber(movie.budget)}</li>
+            <li><span class="text-secondary">Revenue:</span> $ ${addCommasToNumber(movie.revenue)}</li>
+            <li><span class="text-secondary">Runtime:</span> ${movie.runtime} min</li>
+            <li><span class="text-secondary">Status:</span> ${movie.status}</li>
           </ul>
           <h4>Production Companies</h4>
-          <div class="list-group">Company 1, Company 2, Company 3</div>
+          <div class="list-group">${movie.production_companies.map((company) => `<span>${company.name}</span>`).join(', ')}
         </div>`;
         document.querySelector('#movie-details').appendChild(div);
 }
 
+//display Backdrop on details
+
+function displayBackgroundImage(type, backgroundPath) {
+    const overlayDiv = document.createElement('div');
+    overlayDiv.style.backgroundImage = `url(https://image.tmdb.org/t/p/original/${backgroundPath})`;
+    overlayDiv.style.backgroundSize = 'cover';
+    overlayDiv.style.backgroundPosition = 'center';
+    overlayDiv.style.backgroundRepeat = 'no-repeat';
+    overlayDiv.style.height = '100vh';
+    overlayDiv.style.width = '100vw';
+    overlayDiv.style.position = 'absolute';
+    overlayDiv.style.top = '0';
+    overlayDiv.style.left = '0';
+    overlayDiv.style.zIndex = '-1';
+    overlayDiv.style.opacity = '0.15';
+
+    if(type === 'movie') {
+        document.querySelector('#movie-details').appendChild(overlayDiv);
+    } else {
+        document.querySelector('#show-details').appendChild(overlayDiv);
+    }
+}
+ 
 //Fetch data from TMDB API
 
 async function fetchAPIData(endpoint) {
@@ -156,6 +180,12 @@ async function fetchAPIData(endpoint) {
     hideSpinner();
 
     return data;
+}
+
+// function to $
+
+function addCommasToNumber (number) {
+    return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
 // Init app
